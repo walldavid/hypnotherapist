@@ -1,25 +1,36 @@
 const Order = require('../models/Order');
-const { generateDownloadTokens } = require('./orderController');
-const emailService = require('../services/emailService');
+const stripeService = require('../services/stripeService');
+const paypalService = require('../services/paypalService');
 
-// Stripe checkout (placeholder - needs Stripe SDK)
+// Stripe checkout
 exports.createStripeCheckout = async (req, res, next) => {
   try {
     const { orderId } = req.body;
+
+    if (!stripeService.isConfigured()) {
+      return res.status(503).json({ 
+        error: 'Stripe payment is not configured' 
+      });
+    }
 
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // TODO: Implement Stripe checkout session
-    // Will need: npm install stripe
-    // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    // const session = await stripe.checkout.sessions.create({ ... });
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    const successUrl = `${clientUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${clientUrl}/payment/cancel?order_id=${orderId}`;
 
-    res.status(501).json({ 
-      message: 'Stripe integration not yet implemented',
-      orderId: order._id 
+    const session = await stripeService.createCheckoutSession(
+      orderId,
+      successUrl,
+      cancelUrl
+    );
+
+    res.json({
+      sessionId: session.id,
+      url: session.url
     });
   } catch (error) {
     next(error);
@@ -29,57 +40,100 @@ exports.createStripeCheckout = async (req, res, next) => {
 // Handle Stripe webhook
 exports.handleStripeWebhook = async (req, res, next) => {
   try {
-    // TODO: Implement Stripe webhook verification
-    // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-    // const sig = req.headers['stripe-signature'];
-    // const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    const signature = req.headers['stripe-signature'];
+
+    if (!signature) {
+      return res.status(400).json({ error: 'Missing stripe-signature header' });
+    }
+
+    // Verify webhook signature
+    let event;
+    try {
+      event = stripeService.verifyWebhook(req.body, signature);
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).json({ error: 'Webhook signature verification failed' });
+    }
+
+    console.log('Stripe webhook event:', event.type);
 
     // Handle event types
-    // switch (event.type) {
-    //   case 'checkout.session.completed':
-    //     await handlePaymentSuccess(event.data.object);
-    //     break;
-    //   case 'payment_intent.payment_failed':
-    //     await handlePaymentFailure(event.data.object);
-    //     break;
-    // }
+    switch (event.type) {
+      case 'checkout.session.completed':
+        await stripeService.handlePaymentSuccess(event.data.object);
+        break;
+
+      case 'payment_intent.payment_failed':
+        await stripeService.handlePaymentFailure(event.data.object);
+        break;
+
+      case 'charge.refunded':
+        // Handle refund if needed
+        console.log('Refund processed:', event.data.object.id);
+        break;
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
 
     res.json({ received: true });
   } catch (error) {
-    next(error);
+    console.error('Error handling Stripe webhook:', error);
+    res.status(500).json({ error: 'Webhook handler failed' });
   }
 };
 
-// PayPal create order (placeholder)
+// PayPal create order
 exports.createPayPalOrder = async (req, res, next) => {
   try {
     const { orderId } = req.body;
+
+    if (!paypalService.isConfigured()) {
+      return res.status(503).json({ 
+        error: 'PayPal payment is not configured' 
+      });
+    }
 
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // TODO: Implement PayPal order creation
-    // Will need: npm install @paypal/checkout-server-sdk
+    const paypalOrder = await paypalService.createPayPalOrder(orderId);
 
-    res.status(501).json({ 
-      message: 'PayPal integration not yet implemented',
-      orderId: order._id 
+    res.json({
+      id: paypalOrder.id,
+      status: paypalOrder.status,
+      links: paypalOrder.links
     });
   } catch (error) {
     next(error);
   }
 };
 
-// Capture PayPal order (placeholder)
+// Capture PayPal order
 exports.capturePayPalOrder = async (req, res, next) => {
   try {
-    const { paypalOrderId, orderId } = req.body;
+    const { paypalOrderId } = req.body;
 
-    // TODO: Implement PayPal order capture
+    if (!paypalService.isConfigured()) {
+      return res.status(503).json({ 
+        error: 'PayPal payment is not configured' 
+      });
+    }
 
-    res.status(501).json({ message: 'PayPal capture not yet implemented' });
+    const captureData = await paypalService.capturePayPalOrder(paypalOrderId);
+
+    // Handle successful payment
+    if (captureData.status === 'COMPLETED') {
+      await paypalService.handlePaymentSuccess(captureData);
+    }
+
+    res.json({
+      id: captureData.id,
+      status: captureData.status,
+      payer: captureData.payer
+    });
   } catch (error) {
     next(error);
   }
@@ -88,81 +142,35 @@ exports.capturePayPalOrder = async (req, res, next) => {
 // Handle PayPal webhook
 exports.handlePayPalWebhook = async (req, res, next) => {
   try {
-    // TODO: Implement PayPal webhook verification
+    // Verify webhook signature
+    const isValid = await paypalService.verifyWebhook(req.headers, req.body);
+
+    if (!isValid) {
+      return res.status(400).json({ error: 'Invalid webhook signature' });
+    }
+
+    const event = req.body;
+    console.log('PayPal webhook event:', event.event_type);
+
+    // Handle event types
+    switch (event.event_type) {
+      case 'CHECKOUT.ORDER.COMPLETED':
+      case 'PAYMENT.CAPTURE.COMPLETED':
+        // Payment already handled in capturePayPalOrder
+        console.log('PayPal payment completed:', event.resource?.id);
+        break;
+
+      case 'PAYMENT.CAPTURE.REFUNDED':
+        console.log('PayPal refund processed:', event.resource?.id);
+        break;
+
+      default:
+        console.log(`Unhandled PayPal event type: ${event.event_type}`);
+    }
 
     res.json({ received: true });
   } catch (error) {
-    next(error);
+    console.error('Error handling PayPal webhook:', error);
+    res.status(500).json({ error: 'Webhook handler failed' });
   }
 };
-
-// Helper function to handle successful payment
-async function handlePaymentSuccess(orderId, paymentDetails) {
-  try {
-    const order = await Order.findById(orderId);
-    
-    if (!order) {
-      throw new Error('Order not found');
-    }
-
-    // Update order
-    order.paymentStatus = 'completed';
-    order.status = 'completed';
-    order.paymentDetails = {
-      ...order.paymentDetails,
-      ...paymentDetails,
-      paidAt: new Date()
-    };
-
-    await order.save();
-
-    // Generate download tokens
-    await generateDownloadTokens(orderId);
-
-    // Update product sales counts
-    for (const item of order.items) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { salesCount: item.quantity }
-      });
-    }
-
-    // Update user total spent
-    await User.findOneAndUpdate(
-      { email: order.customerEmail },
-      { $inc: { totalSpent: order.total } }
-    );
-
-    // Send confirmation email
-    await emailService.sendOrderConfirmation(order);
-
-    return order;
-  } catch (error) {
-    console.error('Error handling payment success:', error);
-    throw error;
-  }
-}
-
-// Helper function to handle payment failure
-async function handlePaymentFailure(orderId, reason) {
-  try {
-    const order = await Order.findById(orderId);
-    
-    if (!order) {
-      throw new Error('Order not found');
-    }
-
-    order.paymentStatus = 'failed';
-    order.status = 'cancelled';
-    order.notes = reason || 'Payment failed';
-
-    await order.save();
-
-    return order;
-  } catch (error) {
-    console.error('Error handling payment failure:', error);
-    throw error;
-  }
-}
-
-module.exports.handlePaymentSuccess = handlePaymentSuccess;
-module.exports.handlePaymentFailure = handlePaymentFailure;
