@@ -97,6 +97,7 @@ orderSchema.index({ orderNumber: 1 });
 orderSchema.index({ customerEmail: 1, createdAt: -1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
+orderSchema.index({ 'downloads.token': 1 }); // For download token lookup
 
 // Generate unique order number
 orderSchema.pre('save', async function(next) {
