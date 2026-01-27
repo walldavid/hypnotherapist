@@ -37,13 +37,45 @@ hypnotherapist/
 
 - Node.js (v16 or higher)
 - MongoDB (local or Atlas account)
-- Stripe account (for payments)
-- PayPal developer account (for payments)
-- AWS account (for file storage)
+- npm or yarn
 
 ### Installation
 
-Coming soon...
+1. Clone the repository:
+```bash
+git clone https://github.com/walldavid/hypnotherapist.git
+cd hypnotherapist
+```
+
+2. Install dependencies for all packages:
+```bash
+npm run install-all
+```
+
+3. Set up environment variables:
+```bash
+cd server
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+4. Start MongoDB locally (if not using Atlas)
+
+5. Run the development servers:
+```bash
+npm run dev
+```
+
+This will start:
+- Backend API on http://localhost:5000
+- Frontend React app on http://localhost:3000
+
+### Available Scripts
+
+- `npm run dev` - Run both client and server concurrently
+- `npm run client` - Run only the React frontend
+- `npm run server` - Run only the Express backend
+- `npm run install-all` - Install all dependencies
 
 ## 📝 License
 

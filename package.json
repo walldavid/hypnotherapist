@@ -1,0 +1,28 @@
+{
+  "name": "hypnotherapist",
+  "version": "1.0.0",
+  "description": "A full-stack e-commerce web application for selling digital hypnotherapy products (courses, audio files, PDFs).",
+  "main": "index.js",
+  "scripts": {
+    "client": "cd client && npm run dev",
+    "server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walldavid/hypnotherapist.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/walldavid/hypnotherapist/issues"
+  },
+  "homepage": "https://github.com/walldavid/hypnotherapist#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
