@@ -133,6 +133,9 @@ exports.handlePaymentSuccess = async (session) => {
     // Send confirmation email
     const emailService = require('./emailService');
     await emailService.sendOrderConfirmation(order);
+    
+    // Send admin notification
+    await emailService.sendAdminNotification(order);
 
     return order;
   } catch (error) {

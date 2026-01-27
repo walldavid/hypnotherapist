@@ -169,6 +169,9 @@ exports.handlePaymentSuccess = async (captureData) => {
     // Send confirmation email
     const emailService = require('./emailService');
     await emailService.sendOrderConfirmation(order);
+    
+    // Send admin notification
+    await emailService.sendAdminNotification(order);
 
     return order;
   } catch (error) {

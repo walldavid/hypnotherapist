@@ -12,6 +12,7 @@ import Products from './pages/Products'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
+import Download from './pages/Download'
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin'
@@ -34,8 +35,9 @@ function App() {
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/download" element={<Download />} />
                 
-                {/* Admin Routes */}
+                {/* Admin Routes */
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route 
                   path="/admin/dashboard" 

@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const downloadController = require('../controllers/downloadController');
 
-// Download with secure token
-router.get('/:token', downloadController.downloadFile);
+// Get download information (validates token, returns product info)
+router.get('/:token', downloadController.getDownloadInfo);
 
-// Verify token without downloading
-router.get('/:token/verify', downloadController.verifyToken);
+// Download a specific file
+router.post('/:token/file', downloadController.downloadFile);
 
 module.exports = router;
