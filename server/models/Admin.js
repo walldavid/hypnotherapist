@@ -48,10 +48,6 @@ const adminSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes
-adminSchema.index({ username: 1 });
-adminSchema.index({ email: 1 });
-
 // Hash password before saving
 adminSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();

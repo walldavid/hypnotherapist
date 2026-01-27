@@ -56,8 +56,7 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes
-userSchema.index({ email: 1 });
+// Indexes (keep non-unique indexes, remove duplicate unique index)
 userSchema.index({ createdAt: -1 });
 
 // Method to check if user has purchased a specific product

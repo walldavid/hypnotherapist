@@ -92,8 +92,7 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes
-orderSchema.index({ orderNumber: 1 });
+// Indexes (keep composite and special indexes, remove duplicate unique indexes)
 orderSchema.index({ customerEmail: 1, createdAt: -1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
