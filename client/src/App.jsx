@@ -29,40 +29,16 @@ function App() {
             <Navbar />
             <main>
               <Routes>
-                {/* Public Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/download" element={<Download />} />
-                
-                {/* Admin Routes */
                 <Route path="/admin/login" element={<AdminLogin />} />
-                <Route 
-                  path="/admin/dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/products" 
-                  element={
-                    <ProtectedRoute>
-                      <ProductsManager />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/admin/orders" 
-                  element={
-                    <ProtectedRoute>
-                      <OrdersManager />
-                    </ProtectedRoute>
-                  } 
-                />
+                <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/admin/products" element={<ProtectedRoute><ProductsManager /></ProtectedRoute>} />
+                <Route path="/admin/orders" element={<ProtectedRoute><OrdersManager /></ProtectedRoute>} />
               </Routes>
             </main>
             <Footer />
