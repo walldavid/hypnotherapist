@@ -4,6 +4,7 @@ const adminController = require('../controllers/adminController');
 const productController = require('../controllers/productController');
 const orderController = require('../controllers/orderController');
 const { authenticateAdmin } = require('../middleware/auth');
+const { uploadMultiple, handleUploadError } = require('../middleware/upload');
 
 // Admin authentication
 router.post('/login', adminController.login);
@@ -14,7 +15,12 @@ router.get('/me', authenticateAdmin, adminController.getCurrentAdmin);
 router.post('/products', authenticateAdmin, productController.createProduct);
 router.put('/products/:id', authenticateAdmin, productController.updateProduct);
 router.delete('/products/:id', authenticateAdmin, productController.deleteProduct);
-router.post('/products/:id/upload', authenticateAdmin, productController.uploadProductFiles);
+router.post('/products/:id/upload', 
+  authenticateAdmin, 
+  uploadMultiple, 
+  handleUploadError,
+  productController.uploadProductFiles
+);
 
 // Order management
 router.get('/orders', authenticateAdmin, orderController.getAllOrders);

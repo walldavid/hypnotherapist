@@ -29,8 +29,17 @@ exports.downloadFile = async (req, res, next) => {
 
     // Check download limit
     const product = await Product.findById(download.product);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
     if (download.downloadCount >= product.downloadLimit) {
       return res.status(403).json({ error: 'Download limit exceeded' });
+    }
+
+    // Check if product has files
+    if (!product.files || product.files.length === 0) {
+      return res.status(404).json({ error: 'No files available for this product' });
     }
 
     // Update download count
@@ -38,17 +47,45 @@ exports.downloadFile = async (req, res, next) => {
     download.lastDownloadedAt = new Date();
     await order.save();
 
-    // TODO: Generate signed URL from Google Cloud Storage
-    // This will be implemented in Phase 4
-    // const gcsService = require('../services/gcsService');
-    // const downloadUrl = await gcsService.getSignedUrl(product.files[0].gcsUrl);
+    // Generate signed URLs for all files
+    const gcsService = require('../services/gcsService');
 
-    res.status(501).json({ 
-      message: 'File download not yet implemented',
-      product: product.name,
-      downloadCount: download.downloadCount,
-      remainingDownloads: product.downloadLimit - download.downloadCount
-    });
+    if (!gcsService.isConfigured()) {
+      return res.status(503).json({ 
+        error: 'File storage is not configured. Please contact support.' 
+      });
+    }
+
+    try {
+      const downloadLinks = await Promise.all(
+        product.files.map(async (file) => {
+          const signedUrl = await gcsService.getSignedUrl(file.gcsUrl, 1); // 1 hour expiry
+          return {
+            filename: file.originalName,
+            size: file.fileSize,
+            downloadUrl: signedUrl
+          };
+        })
+      );
+
+      res.json({
+        message: 'Download links generated successfully',
+        product: {
+          id: product._id,
+          name: product.name,
+          category: product.category
+        },
+        files: downloadLinks,
+        downloadCount: download.downloadCount,
+        remainingDownloads: product.downloadLimit - download.downloadCount,
+        expiresAt: download.expiresAt
+      });
+    } catch (error) {
+      console.error('Error generating signed URLs:', error);
+      return res.status(500).json({ 
+        error: 'Failed to generate download links. Please try again later.' 
+      });
+    }
   } catch (error) {
     next(error);
   }

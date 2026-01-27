@@ -1,0 +1,9 @@
+# Place your Google Cloud Platform service account key here
+# This file should never be committed to Git!
+
+# To generate a service account key:
+# 1. Go to GCP Console > IAM & Admin > Service Accounts
+# 2. Create or select a service account
+# 3. Click "Keys" tab > "Add Key" > "Create New Key"
+# 4. Choose JSON format
+# 5. Save the downloaded file here as gcp-service-account-key.json

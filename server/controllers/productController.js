@@ -126,13 +126,29 @@ exports.updateProduct = async (req, res, next) => {
 // Delete product (admin only)
 exports.deleteProduct = async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // TODO: Delete associated files from Google Cloud Storage
+    // Delete associated files from Google Cloud Storage
+    if (product.files && product.files.length > 0) {
+      const gcsService = require('../services/gcsService');
+      
+      if (gcsService.isConfigured()) {
+        try {
+          const gcsUrls = product.files.map(file => file.gcsUrl);
+          await gcsService.deleteFiles(gcsUrls);
+          console.log(`Deleted ${gcsUrls.length} files from GCS for product ${product._id}`);
+        } catch (error) {
+          console.error('Error deleting files from GCS:', error);
+          // Continue with product deletion even if file deletion fails
+        }
+      }
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
 
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
@@ -143,10 +159,59 @@ exports.deleteProduct = async (req, res, next) => {
 // Upload product files (admin only)
 exports.uploadProductFiles = async (req, res, next) => {
   try {
-    // TODO: Implement file upload to Google Cloud Storage
-    // This will be implemented in Phase 4
+    const product = await Product.findById(req.params.id);
 
-    res.status(501).json({ message: 'File upload not yet implemented' });
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Check if files were uploaded
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No files uploaded' });
+    }
+
+    const gcsService = require('../services/gcsService');
+
+    // Check if GCS is configured
+    if (!gcsService.isConfigured()) {
+      return res.status(503).json({ 
+        error: 'File storage is not configured. Please set up Google Cloud Storage credentials.' 
+      });
+    }
+
+    // Upload each file to Google Cloud Storage
+    const uploadedFiles = [];
+
+    for (const file of req.files) {
+      try {
+        const fileData = await gcsService.uploadFile(
+          file.buffer,
+          file.originalname,
+          file.mimetype
+        );
+
+        uploadedFiles.push(fileData);
+      } catch (error) {
+        console.error(`Error uploading file ${file.originalname}:`, error);
+        // Continue with other files even if one fails
+      }
+    }
+
+    if (uploadedFiles.length === 0) {
+      return res.status(500).json({ error: 'Failed to upload any files' });
+    }
+
+    // Add uploaded files to product
+    product.files = product.files || [];
+    product.files.push(...uploadedFiles);
+
+    await product.save();
+
+    res.json({
+      message: `${uploadedFiles.length} file(s) uploaded successfully`,
+      files: uploadedFiles,
+      product: product
+    });
   } catch (error) {
     next(error);
   }

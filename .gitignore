@@ -37,8 +37,11 @@ coverage/
 uploads/
 temp/
 
-# AWS
-.aws/
+# Google Cloud
+.gcloud/
+server/config/gcp-service-account-key.json
+server/config/*.json
+!server/config/.gitkeep
 
 # Misc
 *.pem
