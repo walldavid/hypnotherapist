@@ -1,33 +1,71 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { CartProvider, useCart } from './context/CartContext'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
+
+// Pages
+import Home from './pages/Home'
+import Products from './pages/Products'
+import ProductDetail from './pages/ProductDetail'
+import Cart from './pages/Cart'
+import Checkout from './pages/Checkout'
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <header>
-          <h1>Hypnotherapist.ie</h1>
-          <p>Professional Hypnotherapy Products & Courses</p>
-        </header>
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <CartProvider>
+      <Router>
+        <div className="App">
+          <Navbar />
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+            </Routes>
+          </main>
+          <Footer />
+          <ToastContainer position="bottom-right" autoClose={3000} />
+        </div>
+      </Router>
+    </CartProvider>
   )
 }
 
-function Home() {
+function Navbar() {
+  const { getCartCount } = useCart()
+
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h2>Welcome</h2>
-      <p>Your journey to transformation begins here.</p>
-      <p style={{ marginTop: '2rem', color: '#666' }}>
-        🚧 Under Construction 🚧
-      </p>
-    </div>
+    <nav className="navbar">
+      <div className="container">
+        <Link to="/" className="nav-brand">
+          <h1>Hypnotherapist.ie</h1>
+        </Link>
+        <div className="nav-links">
+          <Link to="/">Home</Link>
+          <Link to="/products">Products</Link>
+          <Link to="/cart" className="cart-link">
+            Cart
+            {getCartCount() > 0 && (
+              <span className="cart-badge">{getCartCount()}</span>
+            )}
+          </Link>
+        </div>
+      </div>
+    </nav>
+  )
+}
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <div className="container">
+        <p>&copy; 2026 Hypnotherapist.ie - All rights reserved</p>
+        <p>Professional hypnotherapy programs for personal transformation</p>
+      </div>
+    </footer>
   )
 }
 
