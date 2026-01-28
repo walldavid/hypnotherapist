@@ -28,8 +28,8 @@ function Dashboard() {
         api.get('/admin/orders')
       ]);
 
-      const products = productsRes.data;
-      const orders = ordersRes.data;
+      const products = productsRes.data.products || [];
+      const orders = ordersRes.data.orders || [];
 
       const totalRevenue = orders
         .filter(o => o.paymentStatus === 'completed')
