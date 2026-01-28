@@ -51,7 +51,13 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Data sanitization against NoSQL query injection
-app.use(mongoSanitize());
+// Use replaceWith option to avoid property modification errors
+app.use(mongoSanitize({
+  replaceWith: '_',
+  onSanitize: ({ req, key }) => {
+    console.warn(`Sanitized request parameter: ${key}`);
+  },
+}));
 
 // Rate limiting
 // General API rate limit
