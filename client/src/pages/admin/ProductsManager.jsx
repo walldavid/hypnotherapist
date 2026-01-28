@@ -26,7 +26,7 @@ function ProductsManager() {
     try {
       setLoading(true);
       const response = await api.get('/products');
-      setProducts(response.data);
+      setProducts(response.data.products || []);
     } catch (error) {
       console.error('Error loading products:', error);
       toast.error('Failed to load products');

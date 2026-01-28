@@ -18,7 +18,7 @@ function OrdersManager() {
     try {
       setLoading(true);
       const response = await api.get('/admin/orders');
-      setOrders(response.data);
+      setOrders(response.data.orders || []);
     } catch (error) {
       console.error('Error loading orders:', error);
       toast.error('Failed to load orders');

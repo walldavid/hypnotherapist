@@ -32,7 +32,10 @@ export const AdminProvider = ({ children }) => {
       setAdmin(response.data.admin);
     } catch (error) {
       console.error('Error loading admin:', error);
-      logout();
+      // Only logout if token is invalid (401), not for other errors
+      if (error.response?.status === 401) {
+        logout();
+      }
     } finally {
       setLoading(false);
     }

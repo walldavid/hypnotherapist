@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
+import AdminNav from '../../components/AdminNav';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 import './Dashboard.css';
@@ -13,8 +14,7 @@ function Dashboard() {
     recentOrders: []
   });
   const [loading, setLoading] = useState(true);
-  const { admin, logout } = useAdmin();
-  const navigate = useNavigate();
+  const { admin } = useAdmin();
 
   useEffect(() => {
     loadDashboardData();
@@ -49,12 +49,6 @@ function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    toast.info('Logged out successfully');
-    navigate('/admin/login');
-  };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IE', {
       year: 'numeric',
@@ -72,23 +66,25 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="admin-dashboard">
-        <div className="loading">Loading dashboard...</div>
-      </div>
+      <>
+        <AdminNav />
+        <div className="admin-dashboard">
+          <div className="loading">Loading dashboard...</div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="admin-dashboard">
-      <div className="dashboard-header">
-        <div>
-          <h1>Admin Dashboard</h1>
-          <p>Welcome back, {admin?.username}</p>
+    <>
+      <AdminNav />
+      <div className="admin-dashboard">
+        <div className="dashboard-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Overview of your hypnotherapy products and orders</p>
+          </div>
         </div>
-        <button onClick={handleLogout} className="btn btn-secondary">
-          Logout
-        </button>
-      </div>
 
       <div className="stats-grid">
         <div className="stat-card">
@@ -166,6 +162,7 @@ function Dashboard() {
         )}
       </div>
     </div>
+    </>
   );
 }
 
