@@ -4,7 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
+// const mongoSanitize = require('express-mongo-sanitize'); // Disabled - Node.js 25 compatibility issue
 require('dotenv').config();
 
 const app = express();
@@ -18,6 +18,7 @@ const downloadRoutes = require('./routes/downloadRoutes');
 
 // Import middleware
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const sanitizeMiddleware = require('./middleware/sanitize');
 
 // Security Middleware
 // Helmet - Set security headers
@@ -51,13 +52,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Data sanitization against NoSQL query injection
-// Use replaceWith option to avoid property modification errors
-app.use(mongoSanitize({
-  replaceWith: '_',
-  onSanitize: ({ req, key }) => {
-    console.warn(`Sanitized request parameter: ${key}`);
-  },
-}));
+// Using custom middleware due to express-mongo-sanitize Node.js 25 compatibility issue
+app.use(sanitizeMiddleware);
 
 // Rate limiting
 // General API rate limit
