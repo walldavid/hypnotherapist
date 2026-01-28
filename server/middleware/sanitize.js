@@ -15,7 +15,8 @@ const sanitize = (obj) => {
 
   const sanitized = {};
   for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    // Use Object.prototype.hasOwnProperty to avoid prototype pollution
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       // Remove keys starting with $ or containing .
       const cleanKey = key.replace(/^\$/, '').replace(/\./g, '');
       sanitized[cleanKey] = sanitize(obj[key]);
@@ -25,16 +26,21 @@ const sanitize = (obj) => {
 };
 
 const sanitizeMiddleware = (req, res, next) => {
-  if (req.body) {
-    req.body = sanitize(req.body);
+  try {
+    if (req.body && typeof req.body === 'object') {
+      req.body = sanitize(req.body);
+    }
+    if (req.query && typeof req.query === 'object') {
+      req.query = sanitize(req.query);
+    }
+    if (req.params && typeof req.params === 'object') {
+      req.params = sanitize(req.params);
+    }
+    next();
+  } catch (error) {
+    console.error('Sanitization error:', error);
+    next(); // Continue even if sanitization fails
   }
-  if (req.query) {
-    req.query = sanitize(req.query);
-  }
-  if (req.params) {
-    req.params = sanitize(req.params);
-  }
-  next();
 };
 
 module.exports = sanitizeMiddleware;
