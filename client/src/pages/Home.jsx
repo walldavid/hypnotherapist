@@ -27,11 +27,11 @@ function Home() {
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
-          <h1>Transform Your Life Through Hypnotherapy</h1>
-          <p>Professional digital hypnotherapy courses and audio programs designed to help you achieve your goals</p>
+          <h1>Discover the Power of Your Mind</h1>
+          <p>Professional hypnotherapy audio programs and digital courses designed to help you achieve lasting positive change. Start your transformation journey today.</p>
           <div className="hero-buttons">
-            <Link to="/products" className="btn btn-primary">Browse Products</Link>
-            <Link to="/about" className="btn btn-secondary">Learn More</Link>
+            <Link to="/products" className="btn btn-primary">Browse Programs</Link>
+            <a href="#benefits" className="btn btn-secondary">Learn More</a>
           </div>
         </div>
       </section>
@@ -78,29 +78,29 @@ function Home() {
       </section>
 
       {/* Benefits Section */}
-      <section className="benefits">
+      <section className="benefits" id="benefits">
         <div className="container">
-          <h2>Why Choose Our Hypnotherapy Programs?</h2>
+          <h2>Why Choose Digital Hypnotherapy?</h2>
           <div className="benefits-grid">
             <div className="benefit-card">
               <div className="benefit-icon">🎧</div>
               <h3>Professional Quality</h3>
-              <p>All programs created by certified hypnotherapists with years of experience</p>
+              <p>Expert-crafted programs using proven hypnotherapy techniques for real results</p>
             </div>
             <div className="benefit-card">
               <div className="benefit-icon">📱</div>
               <h3>Instant Access</h3>
-              <p>Download immediately after purchase and access on any device</p>
+              <p>Download immediately after purchase and listen on any device, anytime</p>
             </div>
             <div className="benefit-card">
               <div className="benefit-icon">🔒</div>
-              <h3>Secure & Private</h3>
-              <p>Your purchases and personal information are completely secure</p>
+              <h3>Private & Secure</h3>
+              <p>Complete privacy - practice hypnotherapy in the comfort of your own home</p>
             </div>
             <div className="benefit-card">
-              <div className="benefit-icon">💰</div>
-              <h3>Great Value</h3>
-              <p>One-time payment for lifetime access to your programs</p>
+              <div className="benefit-icon">♾️</div>
+              <h3>Lifetime Access</h3>
+              <p>One-time payment for unlimited access to your programs forever</p>
             </div>
           </div>
         </div>
@@ -109,9 +109,9 @@ function Home() {
       {/* CTA Section */}
       <section className="cta">
         <div className="container">
-          <h2>Ready to Begin Your Transformation?</h2>
-          <p>Explore our collection of hypnotherapy programs and start your journey today</p>
-          <Link to="/products" className="btn btn-primary btn-lg">Get Started</Link>
+          <h2>Ready to Begin Your Journey?</h2>
+          <p>Explore our collection of hypnotherapy programs and take the first step towards positive change</p>
+          <Link to="/products" className="btn btn-primary btn-lg">View All Programs</Link>
         </div>
       </section>
     </div>
