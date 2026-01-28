@@ -95,7 +95,44 @@ exports.searchProducts = async (req, res, next) => {
 // Create product (admin only)
 exports.createProduct = async (req, res, next) => {
   try {
-    const product = new Product(req.body);
+    // Parse JSON fields if they exist
+    const productData = { ...req.body };
+    
+    if (req.body.features && typeof req.body.features === 'string') {
+      try {
+        productData.features = JSON.parse(req.body.features);
+      } catch (e) {
+        productData.features = req.body.features.split(',').map(f => f.trim());
+      }
+    }
+    
+    if (req.body.tags && typeof req.body.tags === 'string') {
+      try {
+        productData.tags = JSON.parse(req.body.tags);
+      } catch (e) {
+        productData.tags = req.body.tags.split(',').map(t => t.trim());
+      }
+    }
+
+    // Handle image uploads
+    if (req.files && req.files.images) {
+      const imagePromises = req.files.images.map(async (file, index) => {
+        // For now, create a data URL for the image
+        // When GCS is configured, this will upload to cloud storage
+        const base64 = file.buffer.toString('base64');
+        const dataUrl = `data:${file.mimetype};base64,${base64}`;
+        
+        return {
+          url: dataUrl,
+          alt: productData.name || 'Product image',
+          isPrimary: index === 0
+        };
+      });
+      
+      productData.images = await Promise.all(imagePromises);
+    }
+
+    const product = new Product(productData);
     await product.save();
 
     res.status(201).json(product);
@@ -107,9 +144,44 @@ exports.createProduct = async (req, res, next) => {
 // Update product (admin only)
 exports.updateProduct = async (req, res, next) => {
   try {
+    // Parse JSON fields if they exist
+    const updateData = { ...req.body };
+    
+    if (req.body.features && typeof req.body.features === 'string') {
+      try {
+        updateData.features = JSON.parse(req.body.features);
+      } catch (e) {
+        updateData.features = req.body.features.split(',').map(f => f.trim());
+      }
+    }
+    
+    if (req.body.tags && typeof req.body.tags === 'string') {
+      try {
+        updateData.tags = JSON.parse(req.body.tags);
+      } catch (e) {
+        updateData.tags = req.body.tags.split(',').map(t => t.trim());
+      }
+    }
+
+    // Handle new image uploads
+    if (req.files && req.files.images) {
+      const imagePromises = req.files.images.map(async (file, index) => {
+        const base64 = file.buffer.toString('base64');
+        const dataUrl = `data:${file.mimetype};base64,${base64}`;
+        
+        return {
+          url: dataUrl,
+          alt: updateData.name || 'Product image',
+          isPrimary: index === 0
+        };
+      });
+      
+      updateData.images = await Promise.all(imagePromises);
+    }
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 

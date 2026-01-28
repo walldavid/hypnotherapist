@@ -17,13 +17,19 @@ const fileFilter = (req, file, cb) => {
     'video/quicktime',
     'video/x-msvideo',
     'application/zip',
-    'application/x-zip-compressed'
+    'application/x-zip-compressed',
+    // Image types for product previews
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif'
   ];
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error(`Invalid file type. Allowed types: PDF, Audio (MP3, WAV, OGG), Video (MP4, MOV, AVI), ZIP`), false);
+    cb(new Error(`Invalid file type. Allowed types: PDF, Audio (MP3, WAV, OGG), Video (MP4, MOV, AVI), ZIP, Images (JPG, PNG, WEBP, GIF)`), false);
   }
 };
 
@@ -42,6 +48,12 @@ exports.uploadSingle = upload.single('file');
 
 // Middleware to handle multiple file uploads
 exports.uploadMultiple = upload.array('files', 10);
+
+// Middleware to handle both product files and images
+exports.uploadProductFiles = upload.fields([
+  { name: 'files', maxCount: 10 },
+  { name: 'images', maxCount: 5 }
+]);
 
 // Custom error handler for multer errors
 exports.handleUploadError = (err, req, res, next) => {
@@ -103,7 +115,12 @@ exports.getExtensionFromMimetype = (mimetype) => {
     'video/quicktime': '.mov',
     'video/x-msvideo': '.avi',
     'application/zip': '.zip',
-    'application/x-zip-compressed': '.zip'
+    'application/x-zip-compressed': '.zip',
+    'image/jpeg': '.jpg',
+    'image/jpg': '.jpg',
+    'image/png': '.png',
+    'image/webp': '.webp',
+    'image/gif': '.gif'
   };
 
   return mimetypeMap[mimetype] || '';

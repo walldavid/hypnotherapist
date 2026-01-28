@@ -13,11 +13,16 @@ function ProductsManager() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    shortDescription: '',
     price: '',
     category: 'audio',
-    status: 'active'
+    status: 'active',
+    duration: '',
+    features: '',
+    tags: ''
   });
   const [files, setFiles] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
 
   useEffect(() => {
     loadProducts();
@@ -45,6 +50,10 @@ function ProductsManager() {
     setFiles(Array.from(e.target.files));
   };
 
+  const handleImageChange = (e) => {
+    setImageFiles(Array.from(e.target.files));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -52,12 +61,32 @@ function ProductsManager() {
       const data = new FormData();
       data.append('name', formData.name);
       data.append('description', formData.description);
-      data.append('price', formData.price);
+      if (formData.shortDescription) data.append('shortDescription', formData.shortDescription);
+      data.append('price', parseFloat(formData.price));
       data.append('category', formData.category);
       data.append('status', formData.status);
+      if (formData.duration) data.append('duration', formData.duration);
+      
+      // Handle features (comma-separated)
+      if (formData.features) {
+        const featuresArray = formData.features.split(',').map(f => f.trim()).filter(f => f);
+        data.append('features', JSON.stringify(featuresArray));
+      }
+      
+      // Handle tags (comma-separated)
+      if (formData.tags) {
+        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
+        data.append('tags', JSON.stringify(tagsArray));
+      }
 
+      // Add product files
       files.forEach(file => {
         data.append('files', file);
+      });
+
+      // Add image files
+      imageFiles.forEach(file => {
+        data.append('images', file);
       });
 
       if (editingProduct) {
@@ -77,7 +106,8 @@ function ProductsManager() {
       loadProducts();
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error(error.response?.data?.error || 'Failed to save product');
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Failed to save product';
+      toast.error(errorMsg);
     }
   };
 
@@ -86,9 +116,13 @@ function ProductsManager() {
     setFormData({
       name: product.name,
       description: product.description,
+      shortDescription: product.shortDescription || '',
       price: product.price,
       category: product.category,
-      status: product.status
+      status: product.status,
+      duration: product.duration || '',
+      features: product.features?.join(', ') || '',
+      tags: product.tags?.join(', ') || ''
     });
     setShowModal(true);
   };
@@ -112,11 +146,16 @@ function ProductsManager() {
     setFormData({
       name: '',
       description: '',
+      shortDescription: '',
       price: '',
       category: 'audio',
-      status: 'active'
+      status: 'active',
+      duration: '',
+      features: '',
+      tags: ''
     });
     setFiles([]);
+    setImageFiles([]);
     setEditingProduct(null);
   };
 
@@ -209,7 +248,21 @@ function ProductsManager() {
                   onChange={handleInputChange}
                   rows="4"
                   required
+                  placeholder="Full description of the product"
                 />
+              </div>
+
+              <div className="form-group">
+                <label>Short Description</label>
+                <textarea
+                  name="shortDescription"
+                  value={formData.shortDescription}
+                  onChange={handleInputChange}
+                  rows="2"
+                  maxLength="300"
+                  placeholder="Brief summary for product cards (optional, max 300 chars)"
+                />
+                <small>{formData.shortDescription.length}/300 characters</small>
               </div>
 
               <div className="form-row">
@@ -223,6 +276,7 @@ function ProductsManager() {
                     min="0"
                     step="0.01"
                     required
+                    placeholder="9.99"
                   />
                 </div>
 
@@ -242,19 +296,76 @@ function ProductsManager() {
                   <select name="status" value={formData.status} onChange={handleInputChange}>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
+                    <option value="draft">Draft</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Files</label>
+                <label>Duration</label>
+                <input
+                  type="text"
+                  name="duration"
+                  value={formData.duration}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 45 minutes, 6 hours"
+                />
+                <small>Optional - specify duration for audio/video/course</small>
+              </div>
+
+              <div className="form-group">
+                <label>Features</label>
+                <textarea
+                  name="features"
+                  value={formData.features}
+                  onChange={handleInputChange}
+                  rows="3"
+                  placeholder="Feature 1, Feature 2, Feature 3"
+                />
+                <small>Comma-separated list of product features (what's included)</small>
+              </div>
+
+              <div className="form-group">
+                <label>Tags</label>
+                <input
+                  type="text"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleInputChange}
+                  placeholder="stress relief, anxiety, sleep"
+                />
+                <small>Comma-separated tags for categorization and search</small>
+              </div>
+
+              <div className="form-group">
+                <label>Product Image</label>
+                <input
+                  type="file"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                />
+                <small>Upload a preview image for the product card (JPG, PNG, WEBP)</small>
+                {imageFiles.length > 0 && (
+                  <div style={{ marginTop: '8px', color: 'var(--color-secondary-dark)' }}>
+                    ✓ {imageFiles[0].name} selected
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Product Files</label>
                 <input
                   type="file"
                   multiple
                   onChange={handleFileChange}
                   accept=".pdf,.mp3,.mp4,.zip"
                 />
-                <small>Upload product files (PDF, MP3, MP4, ZIP)</small>
+                <small>Upload downloadable files (PDF, MP3, MP4, ZIP) - requires Google Cloud Storage setup</small>
+                {files.length > 0 && (
+                  <div style={{ marginTop: '8px', color: 'var(--color-secondary-dark)' }}>
+                    ✓ {files.length} file(s) selected
+                  </div>
+                )}
               </div>
 
               <div className="modal-actions">
