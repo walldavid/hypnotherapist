@@ -1,3 +1,4 @@
+import AdminNav from '../../components/AdminNav';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -62,13 +63,13 @@ function OrdersManager() {
   }
 
   return (
-    <div className="admin-page">
-      <div className="page-header">
-        <div>
-          <Link to="/admin/dashboard" className="back-link">← Back to Dashboard</Link>
-          <h1>Manage Orders</h1>
+    <>
+      <AdminNav />
+      <div className="admin-page">
+        <div className="page-header">
+          <h1>Orders Management</h1>
+          <p>View and manage customer orders</p>
         </div>
-      </div>
 
       <div className="orders-filters">
         <button 
@@ -224,6 +225,7 @@ function OrdersManager() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

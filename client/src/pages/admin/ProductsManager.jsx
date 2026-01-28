@@ -1,3 +1,4 @@
+import AdminNav from '../../components/AdminNav';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -131,16 +132,18 @@ function ProductsManager() {
   }
 
   return (
-    <div className="admin-page">
-      <div className="page-header">
-        <div>
-          <Link to="/admin/dashboard" className="back-link">← Back to Dashboard</Link>
-          <h1>Manage Products</h1>
+    <>
+      <AdminNav />
+      <div className="admin-page">
+        <div className="page-header">
+          <div>
+            <h1>Manage Products</h1>
+            <p>Add, edit, and manage your hypnotherapy products</p>
+          </div>
+          <button onClick={() => setShowModal(true)} className="btn btn-primary">
+            + Add Product
+          </button>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn btn-primary">
-          + Add Product
-        </button>
-      </div>
 
       {products.length === 0 ? (
         <div className="empty-state">
@@ -267,6 +270,7 @@ function ProductsManager() {
         </div>
       )}
     </div>
+    </>
   );
 }
 
