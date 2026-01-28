@@ -71,6 +71,19 @@ main {
   font-weight: 700;
 }
 
+.admin-link {
+  color: #8b5cf6 !important;
+  border: 1px solid #8b5cf6;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.admin-link:hover {
+  background: #8b5cf6;
+  color: white !important;
+}
+
 /* Footer */
 .footer {
   background: #1f2937;

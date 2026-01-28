@@ -68,6 +68,7 @@ function Navbar() {
               <span className="cart-badge">{getCartCount()}</span>
             )}
           </Link>
+          <Link to="/admin/login" className="admin-link">Admin</Link>
         </div>
       </div>
     </nav>
