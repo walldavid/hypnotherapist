@@ -30,14 +30,33 @@ export const AdminProvider = ({ children }) => {
     try {
       const response = await api.get('/admin/me');
       setAdmin(response.data.admin);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading admin:', error);
       // Only logout if token is invalid (401), not for other errors
       if (error.response?.status === 401) {
         logout();
+        setLoading(false);
+      } else {
+        // For other errors (network issues, etc.), keep the session alive
+        // Set a minimal admin object from localStorage to maintain authentication
+        const token = localStorage.getItem('adminToken');
+        if (token) {
+          // Decode the JWT to get admin info (basic decode without verification)
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            setAdmin({ 
+              id: payload.id, 
+              role: payload.role,
+              username: 'admin' // Placeholder until we can reach the server
+            });
+          } catch (e) {
+            console.error('Error decoding token:', e);
+            logout();
+          }
+        }
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
     }
   };
 
