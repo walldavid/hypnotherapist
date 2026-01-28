@@ -99,7 +99,7 @@ orderSchema.index({ createdAt: -1 });
 orderSchema.index({ 'downloads.token': 1 }); // For download token lookup
 
 // Generate unique order number
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('save', async function() {
   if (!this.orderNumber) {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
@@ -107,7 +107,6 @@ orderSchema.pre('save', async function(next) {
     const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     this.orderNumber = `HT${year}${month}${random}`;
   }
-  next();
 });
 
 // Virtual for formatted total
