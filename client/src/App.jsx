@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import { CartProvider, useCart } from './context/CartContext'
-import { AdminProvider } from './context/AdminContext'
+import { AdminProvider, useAdmin } from './context/AdminContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -52,6 +52,7 @@ function App() {
 
 function Navbar() {
   const { getCartCount } = useCart()
+  const { isAuthenticated } = useAdmin()
 
   return (
     <nav className="navbar">
@@ -68,7 +69,12 @@ function Navbar() {
               <span className="cart-badge">{getCartCount()}</span>
             )}
           </Link>
-          <Link to="/admin/login" className="admin-link">Admin</Link>
+          <Link 
+            to={isAuthenticated ? "/admin/dashboard" : "/admin/login"} 
+            className="admin-link"
+          >
+            Admin
+          </Link>
         </div>
       </div>
     </nav>
