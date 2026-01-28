@@ -9,7 +9,8 @@
     "test": "NODE_ENV=test jest --verbose --forceExit",
     "test:watch": "NODE_ENV=test jest --watch",
     "test:coverage": "NODE_ENV=test jest --coverage",
-    "create-admin": "node scripts/createAdmin.js"
+    "create-admin": "node scripts/createAdmin.js",
+    "seed:hypnosis-page": "node scripts/seedHypnosisPage.js"
   },
   "keywords": [],
   "author": "",

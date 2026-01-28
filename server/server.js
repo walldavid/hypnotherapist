@@ -15,6 +15,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const downloadRoutes = require('./routes/downloadRoutes');
+const pageRoutes = require('./routes/pageRoutes');
 
 // Import middleware
 const { errorHandler, notFound } = require('./middleware/errorHandler');
@@ -112,6 +113,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/orders', orderLimiter, orderRoutes); // Apply order limiter
 app.use('/api/payment', paymentRoutes);
 app.use('/api/downloads', downloadLimiter, downloadRoutes); // Apply download limiter
+app.use('/api/pages', pageRoutes);
 
 // Error handling
 app.use(notFound);

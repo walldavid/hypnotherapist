@@ -13,6 +13,7 @@ import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Download from './pages/Download'
+import HypnosisHelp from './pages/HypnosisHelp'
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin'
@@ -32,6 +33,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/how-can-hypnosis-help" element={<HypnosisHelp />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/download" element={<Download />} />
@@ -63,6 +65,7 @@ function Navbar() {
         <div className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/products">Products</Link>
+          <Link to="/how-can-hypnosis-help">How Can Hypnosis Help?</Link>
           <Link to="/cart" className="cart-link">
             Cart
             {getCartCount() > 0 && (

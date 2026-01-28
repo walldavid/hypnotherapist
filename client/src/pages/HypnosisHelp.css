@@ -1,0 +1,120 @@
+.hypnosis-help-page {
+  min-height: 100vh;
+  background: var(--color-off-white);
+}
+
+/* Page Header */
+.page-header {
+  background: linear-gradient(135deg, 
+    rgba(107, 155, 209, 0.08) 0%, 
+    rgba(143, 188, 143, 0.08) 100%),
+    var(--color-white);
+  padding: var(--spacing-4xl) var(--spacing-xl);
+  text-align: center;
+  border-bottom: 1px solid var(--color-light-gray);
+}
+
+.page-header h1 {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-5xl);
+  color: var(--color-primary-dark);
+  margin: 0;
+}
+
+/* Page Content */
+.page-content {
+  padding: var(--spacing-4xl) var(--spacing-xl);
+}
+
+.page-content .container {
+  max-width: 900px;
+  background: var(--color-white);
+  padding: var(--spacing-3xl);
+  border-radius: var(--border-radius-2xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-light-gray);
+}
+
+/* CTA Section */
+.cta-section {
+  margin-top: var(--spacing-4xl);
+  padding: var(--spacing-3xl);
+  background: linear-gradient(135deg, 
+    var(--color-primary) 0%, 
+    var(--color-secondary) 100%);
+  border-radius: var(--border-radius-xl);
+  text-align: center;
+  color: var(--color-white);
+}
+
+.cta-section h2 {
+  font-size: var(--font-size-3xl);
+  color: var(--color-white);
+  margin-bottom: var(--spacing-lg);
+}
+
+.cta-section p {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-2xl);
+  opacity: 0.95;
+}
+
+.cta-section .btn-primary {
+  background: var(--color-white);
+  color: var(--color-primary);
+}
+
+.cta-section .btn-primary:hover {
+  background: var(--color-off-white);
+  transform: translateY(-3px);
+}
+
+/* Loading & Error States */
+.loading,
+.error-state {
+  text-align: center;
+  padding: var(--spacing-4xl);
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xl);
+}
+
+.error-state h2 {
+  font-size: var(--font-size-3xl);
+  color: var(--color-charcoal);
+}
+
+.error-state p {
+  font-size: var(--font-size-lg);
+  color: var(--color-dark-gray);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-header {
+    padding: var(--spacing-3xl) var(--spacing-lg);
+  }
+
+  .page-header h1 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .page-content {
+    padding: var(--spacing-2xl) var(--spacing-md);
+  }
+
+  .page-content .container {
+    padding: var(--spacing-xl);
+  }
+
+  .cta-section {
+    padding: var(--spacing-2xl);
+  }
+
+  .cta-section h2 {
+    font-size: var(--font-size-2xl);
+  }
+}
