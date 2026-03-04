@@ -1,5 +1,5 @@
-const Order = require('../models/Order');
-const Product = require('../models/Product');
+const orders = require('../collections/orders');
+const products = require('../collections/products');
 const gcsService = require('../services/gcsService');
 
 // Get download information (validates token and returns download details)
@@ -7,55 +7,31 @@ exports.getDownloadInfo = async (req, res, next) => {
   try {
     const { token } = req.params;
 
-    // Find order with this download token
-    const order = await Order.findOne({
-      'downloads.token': token
-    }).populate('items.product');
-
-    if (!order) {
+    const tokenDoc = await orders.getDownloadToken(token);
+    if (!tokenDoc) {
       return res.status(404).json({ error: 'Invalid download token' });
     }
 
-    // Find the specific download
-    const download = order.downloads.find(d => d.token === token);
-
-    if (!download) {
-      return res.status(404).json({ error: 'Download not found' });
-    }
-
-    // Check if token has expired
-    if (new Date() > download.expiresAt) {
+    if (new Date() > new Date(tokenDoc.expiresAt)) {
       return res.status(410).json({ error: 'Download link has expired' });
     }
 
-    // Get product info
-    const orderItem = order.items.find(item => 
-      item.product._id.toString() === download.productId.toString()
-    );
-
-    if (!orderItem) {
-      return res.status(404).json({ error: 'Product not found in order' });
-    }
-
-    const product = orderItem.product;
-
-    // Check if product has files
-    if (!product.files || product.files.length === 0) {
+    const product = await products.getById(tokenDoc.productId);
+    if (!product || !product.files || product.files.length === 0) {
       return res.status(404).json({ error: 'No files available for this product' });
     }
 
+    const order = await orders.getById(tokenDoc.orderId);
+
     res.json({
-      orderNumber: order.orderNumber,
-      customerEmail: order.customerEmail,
+      orderNumber: order ? order.orderNumber : '',
+      customerEmail: order ? order.customerEmail : '',
       productName: product.name,
-      productId: product._id,
-      downloadCount: download.downloadCount,
-      maxDownloads: download.maxDownloads,
-      expiresAt: download.expiresAt,
-      files: product.files.map(file => ({
-        originalName: file.originalName,
-        size: file.fileSize
-      }))
+      productId: product.id,
+      downloadCount: tokenDoc.downloadCount,
+      maxDownloads: tokenDoc.maxDownloads,
+      expiresAt: tokenDoc.expiresAt,
+      files: product.files.map(f => ({ originalName: f.originalName, size: f.fileSize })),
     });
   } catch (error) {
     next(error);
@@ -66,78 +42,48 @@ exports.getDownloadInfo = async (req, res, next) => {
 exports.downloadFile = async (req, res, next) => {
   try {
     const { token } = req.params;
-    const { fileIndex } = req.body;
+    const { fileIndex = 0 } = req.body;
 
-    // Find order with this download token
-    const order = await Order.findOne({
-      'downloads.token': token
-    }).populate('items.product');
-
-    if (!order) {
+    const tokenDoc = await orders.getDownloadToken(token);
+    if (!tokenDoc) {
       return res.status(404).json({ error: 'Invalid download token' });
     }
 
-    // Find the specific download
-    const download = order.downloads.find(d => d.token === token);
-
-    if (!download) {
-      return res.status(404).json({ error: 'Download not found' });
-    }
-
-    // Check if token has expired
-    if (new Date() > download.expiresAt) {
+    if (new Date() > new Date(tokenDoc.expiresAt)) {
       return res.status(410).json({ error: 'Download link has expired' });
     }
 
-    // Check download limit
-    if (download.downloadCount >= download.maxDownloads) {
+    if (tokenDoc.downloadCount >= tokenDoc.maxDownloads) {
       return res.status(403).json({ error: 'Download limit exceeded' });
     }
 
-    // Get product
-    const orderItem = order.items.find(item => 
-      item.product._id.toString() === download.productId.toString()
-    );
-
-    if (!orderItem) {
+    const product = await products.getById(tokenDoc.productId);
+    if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    const product = orderItem.product;
-
-    // Check if file index is valid
     if (fileIndex < 0 || fileIndex >= product.files.length) {
       return res.status(400).json({ error: 'Invalid file index' });
     }
 
-    const file = product.files[fileIndex];
-
-    // Check if GCS is configured
     if (!gcsService.isConfigured()) {
-      return res.status(503).json({ 
-        error: 'File storage is not configured. Please contact support.' 
-      });
+      return res.status(503).json({ error: 'File storage is not configured. Please contact support.' });
     }
 
-    // Generate signed URL
+    const file = product.files[fileIndex];
+
     try {
-      const signedUrl = await gcsService.getSignedUrl(file.gcsUrl, 1); // 1 hour expiry
+      const signedUrl = await gcsService.getSignedUrl(file.gcsUrl, 1); // 1-hour expiry
 
-      // Update download count
-      download.downloadCount += 1;
-      download.lastDownloadedAt = new Date();
-      await order.save();
+      await orders.updateDownloadToken(token, {
+        downloadCount: tokenDoc.downloadCount + 1,
+        lastDownloadedAt: new Date().toISOString(),
+      });
 
-      res.json({
-        signedUrl,
-        filename: file.originalName,
-        size: file.fileSize
-      });
-    } catch (error) {
-      console.error('Error generating signed URL:', error);
-      return res.status(500).json({ 
-        error: 'Failed to generate download link. Please try again later.' 
-      });
+      res.json({ signedUrl, filename: file.originalName, size: file.fileSize });
+    } catch (err) {
+      console.error('Error generating signed URL:', err);
+      return res.status(500).json({ error: 'Failed to generate download link. Please try again later.' });
     }
   } catch (error) {
     next(error);

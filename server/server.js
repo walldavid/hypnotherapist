@@ -1,11 +1,13 @@
+const path = require('path');
+require('dotenv').config({
+  path: path.join(__dirname, `.env.${process.env.NODE_ENV || 'development'}`)
+});
+
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
-// const mongoSanitize = require('express-mongo-sanitize'); // Disabled - Node.js 25 compatibility issue
-require('dotenv').config();
 
 const app = express();
 
@@ -22,7 +24,6 @@ const { errorHandler, notFound } = require('./middleware/errorHandler');
 const sanitizeMiddleware = require('./middleware/sanitize');
 
 // Security Middleware
-// Helmet - Set security headers
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -38,8 +39,11 @@ app.use(helmet({
 }));
 
 // CORS Configuration
+const isDev = process.env.NODE_ENV !== 'production';
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: isDev
+    ? ['http://localhost:3000', 'http://localhost:5173']
+    : process.env.CLIENT_URL || false,
   credentials: true,
   optionsSuccessStatus: 200
 };
@@ -53,42 +57,37 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Data sanitization against NoSQL query injection
-// Using custom middleware due to express-mongo-sanitize Node.js 25 compatibility issue
 app.use(sanitizeMiddleware);
 
 // Rate limiting
-// General API rate limit
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 100,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Stricter rate limit for authentication endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login attempts per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   message: 'Too many login attempts, please try again later.',
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Rate limit for download endpoints
 const downloadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 50, // 50 downloads per hour per IP
+  max: 50,
   message: 'Too many download requests, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Rate limit for order creation
 const orderLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // 10 orders per hour per IP
+  windowMs: 60 * 60 * 1000,
+  max: 10,
   message: 'Too many order requests, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -99,8 +98,8 @@ app.use('/api', apiLimiter);
 
 // Routes
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     message: 'Server is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
@@ -108,41 +107,32 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/products', productRoutes);
-app.use('/api/admin/login', authLimiter); // Apply auth limiter to login
+app.use('/api/admin/login', authLimiter);
 app.use('/api/admin', adminRoutes);
-app.use('/api/orders', orderLimiter, orderRoutes); // Apply order limiter
+app.use('/api/orders', orderLimiter, orderRoutes);
 app.use('/api/payment', paymentRoutes);
-app.use('/api/downloads', downloadLimiter, downloadRoutes); // Apply download limiter
+app.use('/api/downloads', downloadLimiter, downloadRoutes);
 app.use('/api/pages', pageRoutes);
 
-// Error handling
-app.use(notFound);
+// Serve React frontend in production; catch unmatched routes in dev
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  app.use('/api', notFound); // 404 for unmatched API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+} else {
+  app.use(notFound);
+}
+
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
-// MongoDB connection
-const connectDB = async () => {
-  try {
-    if (process.env.MONGODB_URI && process.env.NODE_ENV !== 'test') {
-      await mongoose.connect(process.env.MONGODB_URI);
-      console.log('✅ MongoDB connected successfully');
-    } else {
-      console.log('⚠️  MongoDB URI not provided - running without database (development mode)');
-    }
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
-    console.log('⚠️  Server will continue without database connection');
-  }
-};
-
-// Start server
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app;

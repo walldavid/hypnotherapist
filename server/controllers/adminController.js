@@ -1,62 +1,44 @@
 const jwt = require('jsonwebtoken');
-const Admin = require('../models/Admin');
-const Order = require('../models/Order');
-const Product = require('../models/Product');
-const User = require('../models/User');
+const admins = require('../collections/admins');
+const orders = require('../collections/orders');
+const products = require('../collections/products');
+const users = require('../collections/users');
 
 // Admin login
 exports.login = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
-    // Find admin with password field
-    const admin = await Admin.findOne({ username }).select('+password');
-
+    const admin = await admins.findByUsername(username);
     if (!admin) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check if account is locked
-    if (admin.isLocked()) {
+    if (admins.isLocked(admin)) {
       return res.status(423).json({ error: 'Account is locked. Please try again later.' });
     }
 
-    // Check if account is active
     if (admin.status !== 'active') {
       return res.status(403).json({ error: 'Account is not active' });
     }
 
-    // Verify password
-    const isMatch = await admin.comparePassword(password);
-
+    const isMatch = await admins.comparePassword(admin, password);
     if (!isMatch) {
-      await admin.incrementLoginAttempts();
+      await admins.incrementLoginAttempts(admin.id);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Reset login attempts on successful login
-    await admin.resetLoginAttempts();
+    await admins.resetLoginAttempts(admin.id);
 
-    // Update last login
-    admin.lastLogin = new Date();
-    await admin.save();
-
-    // Generate JWT token
     const token = jwt.sign(
-      { id: admin._id, role: admin.role },
+      { id: admin.id, role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
     res.json({
       token,
-      admin: {
-        id: admin._id,
-        username: admin.username,
-        email: admin.email,
-        name: admin.name,
-        role: admin.role
-      }
+      admin: { id: admin.id, username: admin.username, email: admin.email, name: admin.name, role: admin.role },
     });
   } catch (error) {
     next(error);
@@ -65,8 +47,6 @@ exports.login = async (req, res, next) => {
 
 // Admin logout
 exports.logout = async (req, res) => {
-  // Token invalidation would be handled on client side
-  // Or implement token blacklist in production
   res.json({ message: 'Logged out successfully' });
 };
 
@@ -74,61 +54,36 @@ exports.logout = async (req, res) => {
 exports.getCurrentAdmin = async (req, res) => {
   res.json({
     admin: {
-      id: req.admin._id,
+      id: req.admin.id,
       username: req.admin.username,
       email: req.admin.email,
       name: req.admin.name,
       role: req.admin.role,
-      lastLogin: req.admin.lastLogin
-    }
+      lastLogin: req.admin.lastLogin,
+    },
   });
 };
 
 // Get dashboard stats
 exports.getDashboardStats = async (req, res, next) => {
   try {
-    const [
-      totalProducts,
-      activeProducts,
-      totalOrders,
-      completedOrders,
-      totalRevenue,
-      totalUsers
-    ] = await Promise.all([
-      Product.countDocuments(),
-      Product.countDocuments({ status: 'active' }),
-      Order.countDocuments(),
-      Order.countDocuments({ paymentStatus: 'completed' }),
-      Order.aggregate([
-        { $match: { paymentStatus: 'completed' } },
-        { $group: { _id: null, total: { $sum: '$total' } } }
-      ]),
-      User.countDocuments()
-    ]);
+    const [totalProducts, activeProducts, totalOrders, completedOrders, totalRevenue, totalUsers] =
+      await Promise.all([
+        products.countDocuments(),
+        products.countDocuments({ status: 'active' }),
+        orders.countDocuments(),
+        orders.countDocuments({ paymentStatus: 'completed' }),
+        orders.getTotalRevenue(),
+        users.countDocuments(),
+      ]);
 
-    // Recent orders
-    const recentOrders = await Order.find()
-      .sort('-createdAt')
-      .limit(10)
-      .populate('items.product', 'name price');
-
-    // Top selling products
-    const topProducts = await Product.find({ status: 'active' })
-      .sort('-salesCount')
-      .limit(5)
-      .select('name price salesCount');
+    const recentOrders = await orders.getRecentOrders(10);
+    const topProducts = await products.getTopBySales(5);
 
     res.json({
-      stats: {
-        totalProducts,
-        activeProducts,
-        totalOrders,
-        completedOrders,
-        totalRevenue: totalRevenue[0]?.total || 0,
-        totalUsers
-      },
+      stats: { totalProducts, activeProducts, totalOrders, completedOrders, totalRevenue, totalUsers },
       recentOrders,
-      topProducts
+      topProducts,
     });
   } catch (error) {
     next(error);

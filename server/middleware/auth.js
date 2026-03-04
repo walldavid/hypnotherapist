@@ -1,21 +1,18 @@
 const jwt = require('jsonwebtoken');
-const Admin = require('../models/Admin');
+const admins = require('../collections/admins');
 
 // Authenticate admin JWT token
 exports.authenticateAdmin = async (req, res, next) => {
   try {
-    // Get token from header
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
       return res.status(401).json({ error: 'No authentication token provided' });
     }
 
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find admin
-    const admin = await Admin.findById(decoded.id).select('-password');
+    const admin = await admins.getById(decoded.id);
 
     if (!admin) {
       return res.status(401).json({ error: 'Admin not found' });
@@ -25,7 +22,6 @@ exports.authenticateAdmin = async (req, res, next) => {
       return res.status(403).json({ error: 'Admin account is not active' });
     }
 
-    // Attach admin to request
     req.admin = admin;
     next();
   } catch (error) {
