@@ -40,8 +40,12 @@ steps:
       - '--max-instances=10'
       - '--memory=512Mi'
       - '--cpu=1'
-      - '--set-secrets=STRIPE_SECRET_KEY=stripe-secret-key:latest,STRIPE_WEBHOOK_SECRET=stripe-webhook-secret:latest,SANITY_API_TOKEN=sanity-api-token:latest,RESEND_API_KEY=resend-api-key:latest,FIREBASE_SERVICE_ACCOUNT_JSON=firebase-service-account:latest'
-      - '--set-env-vars=NEXT_PUBLIC_SANITY_PROJECT_ID=$_NEXT_PUBLIC_SANITY_PROJECT_ID,NEXT_PUBLIC_SANITY_DATASET=production,NEXT_PUBLIC_FIREBASE_PROJECT_ID=$_PROJECT_ID,GCS_BUCKET_NAME=$_GCS_BUCKET_NAME,CONTACT_EMAIL_TO=$_CONTACT_EMAIL_TO,NEXT_PUBLIC_SITE_URL=$_SITE_URL'
+      # Secrets from Secret Manager (no service account JSON needed — Cloud Run uses ADC)
+      - '--set-secrets=STRIPE_SECRET_KEY=stripe-secret-key:latest,STRIPE_WEBHOOK_SECRET=stripe-webhook-secret:latest,SANITY_API_TOKEN=sanity-api-token:latest,RESEND_API_KEY=resend-api-key:latest'
+      - '--set-env-vars=NEXT_PUBLIC_SANITY_PROJECT_ID=$_NEXT_PUBLIC_SANITY_PROJECT_ID,NEXT_PUBLIC_SANITY_DATASET=production,NEXT_PUBLIC_FIREBASE_PROJECT_ID=$_PROJECT_ID,FIRESTORE_DATABASE_ID=$_FIRESTORE_DATABASE_ID,GCS_BUCKET_NAME=$_GCS_BUCKET_NAME,CONTACT_EMAIL_TO=$_CONTACT_EMAIL_TO,NEXT_PUBLIC_SITE_URL=$_SITE_URL'
+      # The Cloud Run service account must have:
+      #   roles/datastore.user       (Firestore read/write)
+      #   roles/storage.objectViewer (GCS signed URLs)
 
 images:
   - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$COMMIT_SHA'
@@ -55,6 +59,7 @@ substitutions:
   _NEXT_PUBLIC_SANITY_PROJECT_ID: ''
   _NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ''
   _GCS_BUCKET_NAME: ''
+  _FIRESTORE_DATABASE_ID: '(default)'
 
 options:
   logging: CLOUD_LOGGING_ONLY

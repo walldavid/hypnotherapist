@@ -1,29 +1,20 @@
-import * as admin from 'firebase-admin'
+import { Firestore } from '@google-cloud/firestore'
 
-function initFirebase() {
-  if (admin.apps.length) return
-
-  let credential: admin.credential.Credential
-
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
-  if (raw && raw.startsWith('{')) {
-    try {
-      const serviceAccount = JSON.parse(raw)
-      credential = admin.credential.cert(serviceAccount)
-    } catch {
-      credential = admin.credential.applicationDefault()
-    }
-  } else {
-    credential = admin.credential.applicationDefault()
+function createDb(): Firestore {
+  if (process.env.NODE_ENV === 'development' && process.env.USE_EMULATOR === 'true') {
+    console.log('[Firestore] Using emulator at localhost:8081')
+    process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8081'
+    return new Firestore({
+      projectId: 'hypno-local-dev',
+      databaseId: process.env.FIRESTORE_DATABASE_ID || '(default)',
+    })
   }
 
-  admin.initializeApp({
-    credential,
+  console.log('[Firestore] Using production (ADC)')
+  return new Firestore({
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    databaseId: process.env.FIRESTORE_DATABASE_ID || '(default)',
   })
 }
 
-initFirebase()
-
-export const db = admin.firestore()
-export default admin
+export const db = createDb()

@@ -33,7 +33,7 @@ export async function getDownloadToken(
 ): Promise<DownloadTokenData | null> {
   const doc = await db.collection('downloadTokens').doc(token).get()
   if (!doc.exists) return null
-  return doc.data() as DownloadTokenData
+  return doc.data() as DownloadTokenData | null
 }
 
 export async function markTokenUsed(token: string): Promise<void> {

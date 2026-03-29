@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // downloadTokens — only written/read by the server via ADC (Admin SDK bypasses these rules)
+    // These rules apply to direct client access only, which we don't use.
+    match /downloadTokens/{token} {
+      allow read, write: if false;
+    }
+
+    // sessionTokens — same, server-only
+    match /sessionTokens/{sessionId} {
+      allow read, write: if false;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

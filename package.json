@@ -4,11 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:emulator": "NODE_ENV=development USE_EMULATOR=true next dev",
+    "dev:full": "concurrently \"npm run firebase:emulate\" \"npm run dev:emulator\"",
+    "firebase:emulate": "firebase emulators:start --project hypno-local-dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^8.3.0",
     "@google-cloud/storage": "^7.19.0",
     "@portabletext/react": "^6.0.3",
     "@sanity/client": "^7.20.0",
@@ -16,7 +20,6 @@
     "@sanity/vision": "^5.18.0",
     "@stripe/stripe-js": "^9.0.0",
     "clsx": "^2.1.1",
-    "firebase-admin": "^13.7.0",
     "framer-motion": "^12.38.0",
     "next": "16.2.1",
     "next-sanity": "^12.2.1",
@@ -32,6 +35,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "prettier": "^3.8.1",
