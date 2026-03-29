@@ -1,86 +1,36 @@
-# Hypnotherapist E-commerce Platform
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A full-stack e-commerce web application for selling digital hypnotherapy products (courses, audio files, PDFs).
+## Getting Started
 
-## 🚀 Technology Stack
+First, run the development server:
 
-- **Frontend**: React
-- **Backend**: Node.js/Express
-- **Database**: MongoDB
-- **Payment Processing**: Stripe + PayPal
-- **File Storage**: AWS S3
-- **Authentication**: JWT
-
-## 📋 Features
-
-- Product catalog with search and filtering
-- Shopping cart and secure checkout
-- Dual payment gateway support (Stripe & PayPal)
-- Simple account system for purchase tracking
-- Secure, time-limited download links
-- Admin dashboard for product management
-- Email notifications for orders
-- Responsive, mobile-first design
-
-## 🏗️ Project Structure
-
-```
-hypnotherapist/
-├── client/          # React frontend application
-├── server/          # Node.js/Express backend API
-└── README.md
-```
-
-## 🔧 Setup Instructions
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- MongoDB (local or Atlas account)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/walldavid/hypnotherapist.git
-cd hypnotherapist
-```
-
-2. Install dependencies for all packages:
-```bash
-npm run install-all
-```
-
-3. Set up environment variables:
-```bash
-cd server
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-4. Start MongoDB locally (if not using Atlas)
-
-5. Run the development servers:
 ```bash
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-This will start:
-- Backend API on http://localhost:5000
-- Frontend React app on http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Available Scripts
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-- `npm run dev` - Run both client and server concurrently
-- `npm run client` - Run only the React frontend
-- `npm run server` - Run only the Express backend
-- `npm run install-all` - Install all dependencies
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## 📝 License
+## Learn More
 
-Copyright © 2026 - All rights reserved
+To learn more about Next.js, take a look at the following resources:
 
-## 👨‍⚕️ About
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-Built for www.hypnotherapist.ie - Professional hypnotherapy services and digital products.
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-indigo-deep: #2D1B69;
+  --color-lavender: #7B5EA7;
+  --color-lavender-light: #9B7DC7;
+  --color-lilac-soft: #E8E0F5;
+  --color-lilac-pale: #F5F0FF;
+  --font-heading: var(--font-cormorant), serif;
+  --font-body: var(--font-lato), sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}

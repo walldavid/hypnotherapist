@@ -1,0 +1,60 @@
+# Google Cloud Build — builds and deploys to Cloud Run
+# Usage: gcloud builds submit --config cloudbuild.yaml .
+#
+# Required substitutions (set in Cloud Build trigger or pass with --substitutions):
+#   _REGION          e.g. europe-west1
+#   _SERVICE_NAME    e.g. hypnotherapistdotie
+#   _PROJECT_ID      your GCP project ID
+
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - '--build-arg=NEXT_PUBLIC_SANITY_PROJECT_ID=$_NEXT_PUBLIC_SANITY_PROJECT_ID'
+      - '--build-arg=NEXT_PUBLIC_SANITY_DATASET=production'
+      - '--build-arg=NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$_NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'
+      - '--build-arg=NEXT_PUBLIC_FIREBASE_PROJECT_ID=$_PROJECT_ID'
+      - '--build-arg=NEXT_PUBLIC_SITE_URL=$_SITE_URL'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$COMMIT_SHA'
+      - '.'
+
+  # Push to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$COMMIT_SHA']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - '$_SERVICE_NAME'
+      - '--image=gcr.io/$PROJECT_ID/$_SERVICE_NAME:$COMMIT_SHA'
+      - '--region=$_REGION'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--min-instances=0'
+      - '--max-instances=10'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--set-secrets=STRIPE_SECRET_KEY=stripe-secret-key:latest,STRIPE_WEBHOOK_SECRET=stripe-webhook-secret:latest,SANITY_API_TOKEN=sanity-api-token:latest,RESEND_API_KEY=resend-api-key:latest,FIREBASE_SERVICE_ACCOUNT_JSON=firebase-service-account:latest'
+      - '--set-env-vars=NEXT_PUBLIC_SANITY_PROJECT_ID=$_NEXT_PUBLIC_SANITY_PROJECT_ID,NEXT_PUBLIC_SANITY_DATASET=production,NEXT_PUBLIC_FIREBASE_PROJECT_ID=$_PROJECT_ID,GCS_BUCKET_NAME=$_GCS_BUCKET_NAME,CONTACT_EMAIL_TO=$_CONTACT_EMAIL_TO,NEXT_PUBLIC_SITE_URL=$_SITE_URL'
+
+images:
+  - 'gcr.io/$PROJECT_ID/$_SERVICE_NAME:$COMMIT_SHA'
+
+substitutions:
+  _REGION: europe-west1
+  _SERVICE_NAME: hypnotherapistdotie
+  _SITE_URL: https://hypnotherapy.ie
+  _CONTACT_EMAIL_TO: hello@hypnotherapy.ie
+  # Override these in the Cloud Build trigger:
+  _NEXT_PUBLIC_SANITY_PROJECT_ID: ''
+  _NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ''
+  _GCS_BUCKET_NAME: ''
+
+options:
+  logging: CLOUD_LOGGING_ONLY
