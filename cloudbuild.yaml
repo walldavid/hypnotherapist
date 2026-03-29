@@ -40,6 +40,7 @@ steps:
       - '--max-instances=10'
       - '--memory=512Mi'
       - '--cpu=1'
+      - '--service-account=hypnotherapy-run@$PROJECT_ID.iam.gserviceaccount.com'
       # Secrets from Secret Manager (no service account JSON needed — Cloud Run uses ADC)
       - '--set-secrets=STRIPE_SECRET_KEY=stripe-secret-key:latest,STRIPE_WEBHOOK_SECRET=stripe-webhook-secret:latest,SANITY_API_TOKEN=sanity-api-token:latest,RESEND_API_KEY=resend-api-key:latest'
       - '--set-env-vars=NEXT_PUBLIC_SANITY_PROJECT_ID=$_NEXT_PUBLIC_SANITY_PROJECT_ID,NEXT_PUBLIC_SANITY_DATASET=production,NEXT_PUBLIC_FIREBASE_PROJECT_ID=$_PROJECT_ID,FIRESTORE_DATABASE_ID=$_FIRESTORE_DATABASE_ID,GCS_BUCKET_NAME=$_GCS_BUCKET_NAME,CONTACT_EMAIL_TO=$_CONTACT_EMAIL_TO,NEXT_PUBLIC_SITE_URL=$_SITE_URL'
