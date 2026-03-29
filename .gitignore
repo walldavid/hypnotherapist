@@ -1,41 +1,50 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ---- Dependencies ----
+node_modules/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# ---- Next.js ----
+.next/
+out/
+build/
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
+# ---- Environment & secrets ----
+.env
+.env.local
+.env.*.local
 *.pem
+*service-account*.json
+*credentials*.json
 
-# debug
+# ---- Google Cloud ----
+# Keep cloudbuild.yaml and Dockerfile — they're deployment config, not secrets
+gcloud-service-key.json
+
+# ---- Sanity ----
+# Studio build output (rebuilt automatically)
+.sanity/
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Editor ----
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ---- Debug logs ----
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+# ---- TypeScript ----
 *.tsbuildinfo
 next-env.d.ts
+
+# ---- Test coverage ----
+coverage/
+
+# ---- Misc ----
+*.pnp
+.pnp.*
