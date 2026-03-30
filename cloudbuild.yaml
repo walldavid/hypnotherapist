@@ -56,10 +56,9 @@ substitutions:
   _SERVICE_NAME: hypnotherapistdotie
   _SITE_URL: https://hypnotherapy.ie
   _CONTACT_EMAIL_TO: hello@hypnotherapy.ie
-  # Override these in the Cloud Build trigger:
-  _NEXT_PUBLIC_SANITY_PROJECT_ID: ''
-  _NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ''
-  _GCS_BUCKET_NAME: ''
+  _NEXT_PUBLIC_SANITY_PROJECT_ID: '2lhjnuav'
+  _NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_test_51Ls6wBB2cRB2ObhZrYTxdykhjWL5rzx6lrnBmAdNGhTrd9ynUuOKrDrvsKBDrgY6y2luqpMQK5tpfhOEE7MGC9L500JDUO0unb'
+  _GCS_BUCKET_NAME: 'hypnotherapy-ie-audio'
   _FIRESTORE_DATABASE_ID: '(default)'
 
 options:
