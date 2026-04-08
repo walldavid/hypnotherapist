@@ -13,7 +13,7 @@ export async function sendContactEmail({
 }): Promise<void> {
   await resend.emails.send({
     from: 'noreply@hypnotherapy.ie',
-    to: process.env.CONTACT_EMAIL_TO || 'hello@hypnotherapy.ie',
+    to: process.env.CONTACT_EMAIL_TO || 'jwall@hypnotherapist.ie',
     subject: `New contact form message from ${name}`,
     html: `
       <h2>New Contact Form Submission</h2>

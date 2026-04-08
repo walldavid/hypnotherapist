@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useScrolled } from '@/hooks/useScrolled'
+import { useAdmin } from '@/lib/admin-context'
 import { clsx } from 'clsx'
 
 const navLinks = [
@@ -17,6 +18,7 @@ const navLinks = [
 export function Navbar() {
   const scrolled = useScrolled(80)
   const [menuOpen, setMenuOpen] = useState(false)
+  const { isAdmin } = useAdmin()
 
   return (
     <nav
@@ -45,6 +47,22 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <>
+                <Link
+                  href="/studio"
+                  className="rounded-full bg-white/15 px-3 py-1 font-body text-xs font-semibold text-white/90 transition-colors hover:bg-white/25"
+                >
+                  Admin
+                </Link>
+                <a
+                  href="/admin/logout"
+                  className="font-body text-xs text-white/60 transition-colors hover:text-white"
+                >
+                  Logout
+                </a>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -76,6 +94,23 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <div className="border-t border-white/10 mt-1 pt-1">
+                <Link
+                  href="/studio"
+                  className="block px-4 py-3 font-body text-white/90 hover:text-white hover:bg-white/10 transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Admin Studio
+                </Link>
+                <a
+                  href="/admin/logout"
+                  className="block px-4 py-3 font-body text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  Logout
+                </a>
+              </div>
+            )}
           </div>
         )}
       </div>

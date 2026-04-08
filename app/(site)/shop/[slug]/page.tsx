@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { AudioPlayer } from '@/components/shop/AudioPlayer'
 import { BuyButton } from '@/components/shop/BuyButton'
 import { PortableTextRenderer } from '@/components/blog/PortableTextRenderer'
+import { EditButton } from '@/components/ui/EditButton'
 
 export async function generateStaticParams() {
   try {
@@ -58,9 +59,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div className="p-8">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
               <div>
-                <h1 className="font-heading text-4xl md:text-5xl text-[var(--color-indigo-deep)] mb-3">
-                  {product.title}
-                </h1>
+                <div className="flex items-center gap-3 mb-3">
+                  <h1 className="font-heading text-4xl md:text-5xl text-[var(--color-indigo-deep)]">
+                    {product.title}
+                  </h1>
+                  <EditButton schemaType="product" documentId={product._id} />
+                </div>
                 {product.benefitTags && product.benefitTags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {product.benefitTags.map((tag: string) => (

@@ -3,6 +3,7 @@ import { client } from '@/sanity/lib/client'
 import { pageBySlugQuery } from '@/sanity/lib/queries'
 import { FAQAccordion } from '@/components/about-hypnotherapy/FAQAccordion'
 import { SectionHeading } from '@/components/ui/SectionHeading'
+import { EditButton } from '@/components/ui/EditButton'
 
 const defaultFaqs = [
   {
@@ -48,7 +49,10 @@ export default async function AboutHypnotherapyPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-indigo-deep)]/80 to-[var(--color-lavender)]/60" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white px-4">
-            <h1 className="font-heading text-5xl md:text-7xl mb-4">About Hypnotherapy</h1>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <h1 className="font-heading text-5xl md:text-7xl">About Hypnotherapy</h1>
+              {page?._id && <EditButton schemaType="page" documentId={page._id} />}
+            </div>
             <p className="font-body text-lg text-[var(--color-lilac-soft)]/90 max-w-2xl">
               Discover the science and art of hypnotherapy and how it can transform your life
             </p>

@@ -40,9 +40,9 @@ steps:
       - '--max-instances=10'
       - '--memory=512Mi'
       - '--cpu=1'
-      - '--service-account=hypnotherapy-run@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--service-account=922991726920-compute@developer.gserviceaccount.com'
       # Secrets from Secret Manager (no service account JSON needed — Cloud Run uses ADC)
-      - '--set-secrets=STRIPE_SECRET_KEY=stripe-secret-key:latest,STRIPE_WEBHOOK_SECRET=stripe-webhook-secret:latest,SANITY_API_TOKEN=sanity-api-token:latest,RESEND_API_KEY=resend-api-key:latest'
+      - '--set-secrets=STRIPE_SECRET_KEY=stripe-secret-key:latest,STRIPE_WEBHOOK_SECRET=stripe-webhook-secret:latest,SANITY_API_TOKEN=sanity-api-token:latest,RESEND_API_KEY=resend-api-key:latest,ADMIN_EMAIL=admin-email:latest,ADMIN_PASSWORD=admin-password:latest,ADMIN_JWT_SECRET=admin-jwt-secret:latest'
       - '--set-env-vars=NEXT_PUBLIC_SANITY_PROJECT_ID=$_NEXT_PUBLIC_SANITY_PROJECT_ID,NEXT_PUBLIC_SANITY_DATASET=production,NEXT_PUBLIC_FIREBASE_PROJECT_ID=$_PROJECT_ID,FIRESTORE_DATABASE_ID=$_FIRESTORE_DATABASE_ID,GCS_BUCKET_NAME=$_GCS_BUCKET_NAME,CONTACT_EMAIL_TO=$_CONTACT_EMAIL_TO,NEXT_PUBLIC_SITE_URL=$_SITE_URL'
       # The Cloud Run service account must have:
       #   roles/datastore.user       (Firestore read/write)
@@ -55,7 +55,7 @@ substitutions:
   _REGION: europe-west1
   _SERVICE_NAME: hypnotherapistdotie
   _SITE_URL: https://hypnotherapy.ie
-  _CONTACT_EMAIL_TO: hello@hypnotherapy.ie
+  _CONTACT_EMAIL_TO: jwall@hypnotherapist.ie
   _NEXT_PUBLIC_SANITY_PROJECT_ID: '2lhjnuav'
   _NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_test_51Ls6wBB2cRB2ObhZrYTxdykhjWL5rzx6lrnBmAdNGhTrd9ynUuOKrDrvsKBDrgY6y2luqpMQK5tpfhOEE7MGC9L500JDUO0unb'
   _GCS_BUCKET_NAME: 'hypnotherapy-ie-audio'

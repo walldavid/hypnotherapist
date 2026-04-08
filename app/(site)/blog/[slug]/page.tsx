@@ -4,6 +4,7 @@ import { client } from '@/sanity/lib/client'
 import { postBySlugQuery, allPostSlugsQuery } from '@/sanity/lib/queries'
 import { urlForImage } from '@/sanity/lib/image'
 import { PortableTextRenderer } from '@/components/blog/PortableTextRenderer'
+import { EditButton } from '@/components/ui/EditButton'
 
 export async function generateStaticParams() {
   try {
@@ -49,7 +50,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           {formattedDate && (
             <time className="font-body text-sm text-white/70 uppercase tracking-wider">{formattedDate}</time>
           )}
-          <h1 className="font-heading text-4xl md:text-6xl text-white mt-2">{post.title}</h1>
+          <div className="flex items-center gap-3 mt-2">
+            <h1 className="font-heading text-4xl md:text-6xl text-white">{post.title}</h1>
+            <EditButton schemaType="post" documentId={post._id} />
+          </div>
           {post.author && (
             <p className="font-body text-white/80 mt-2">By {post.author}</p>
           )}
