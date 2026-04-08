@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { writeClient } from '@/sanity/lib/client'
 import { storeDownloadToken, storeSessionToken } from '@/lib/kv'
 import { randomBytes } from 'crypto'
@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No signature' }, { status: 400 })
   }
 
+  const stripe = getStripe()
   let event: ReturnType<typeof stripe.webhooks.constructEvent>
 
   try {
